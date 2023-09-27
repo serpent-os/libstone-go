@@ -32,62 +32,62 @@ type RecordTag uint16
 
 const (
 	// Name of the package
-	RecordTagName RecordTag = 1
+	RecordTagName RecordTag = iota + 1
 	// Architecture of the package
-	RecordTagArchitecture RecordTag = 2
+	RecordTagArchitecture
 	// Version of the package
-	RecordTagVersion RecordTag = 3
+	RecordTagVersion
 	// Summary of the package
-	RecordTagSummary RecordTag = 4
+	RecordTagSummary
 	// Description of the package
-	RecordTagDescription RecordTag = 5
+	RecordTagDescription
 	// Homepage for the package
-	RecordTagHomepage RecordTag = 6
+	RecordTagHomepage
 	// ID for the source package, used for grouping
-	RecordTagSourceID RecordTag = 7
+	RecordTagSourceID
 	// Runtime dependencies
-	RecordTagDepends RecordTag = 8
+	RecordTagDepends
 	// Provides some capability or name
-	RecordTagProvides RecordTag = 9
+	RecordTagProvides
 	// Conflicts with some capability or name
-	RecordTagConflicts RecordTag = 10
+	RecordTagConflicts
 	// Release number for the package
-	RecordTagRelease RecordTag = 11
+	RecordTagRelease
 	// SPDX license identifier
-	RecordTagLicense RecordTag = 12
+	RecordTagLicense
 	// Currently recorded build number
-	RecordTagBuildRelease RecordTag = 13
+	RecordTagBuildRelease
 	// Repository index specific (relative URI)
-	RecordTagPackageURI RecordTag = 14
+	RecordTagPackageURI
 	// Repository index specific (Package hash)
-	RecordTagPackageHash RecordTag = 15
+	RecordTagPackageHash
 	// Repository index specific (size on disk)
-	RecordTagPackageSize RecordTag = 16
+	RecordTagPackageSize
 	// A Build Dependency
-	RecordTagBuildDepends RecordTag = 17
+	RecordTagBuildDepends
 	// Upstream URI for the source
-	RecordTagSourceURI RecordTag = 18
+	RecordTagSourceURI
 	// Relative path for the source within the upstream URI
-	RecordTagSourcePath RecordTag = 19
+	RecordTagSourcePath
 	// Ref/commit of the upstream source
-	RecordTagSourceRef RecordTag = 20
+	RecordTagSourceRef
 )
 
 type RecordType uint8
 
 const (
-	RecordTypeUnknown    RecordType = 0
-	RecordTypeInt8       RecordType = 1
-	RecordTypeUint8      RecordType = 2
-	RecordTypeInt16      RecordType = 3
-	RecordTypeUint16     RecordType = 4
-	RecordTypeInt32      RecordType = 5
-	RecordTypeUint32     RecordType = 6
-	RecordTypeInt64      RecordType = 7
-	RecordTypeUint64     RecordType = 8
-	RecordTypeString     RecordType = 9
-	RecordTypeDependency RecordType = 10
-	RecordTypeProvider   RecordType = 11
+	RecordTypeUnknown RecordType = iota
+	RecordTypeInt8
+	RecordTypeUint8
+	RecordTypeInt16
+	RecordTypeUint16
+	RecordTypeInt32
+	RecordTypeUint32
+	RecordTypeInt64
+	RecordTypeUint64
+	RecordTypeString
+	RecordTypeDependency
+	RecordTypeProvider
 )
 
 type MetaRecord struct {
