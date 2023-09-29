@@ -3,8 +3,8 @@ package payload
 import (
 	"bytes"
 	"encoding/binary"
-
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"strings"
 )
 
 type Kind uint8
@@ -21,8 +21,8 @@ const (
 type Compression uint8
 
 const (
-	None Compression = 1
-	Zstd             = 2
+	None Compression = iota + 1
+	Zstd
 )
 
 type PayloadHeader struct {
@@ -47,12 +47,7 @@ func ReadPayloadHeader(headerData [32]byte) (*PayloadHeader, error) {
 }
 
 func (p PayloadHeader) Print() {
-	logrus.Printf("Payload kind: %d", p.Kind)
-	logrus.Printf("Payload Compression: %d", p.Compression)
-	logrus.Printf("Payload version: %d", p.Version)
-	logrus.Printf("Payload records: %d", p.NumRecords)
-	logrus.Printf("Payload stored size: %d", p.StoredSize)
-	logrus.Printf("Payload plain size: %d", p.PlainSize)
+	fmt.Printf("Payload: %s [Records: %d Compression: %s, Savings: %.2f%%, Size: %d B]\n",
+		strings.TrimLeft(p.Kind.String(), "Kind"), p.NumRecords, p.Compression.String(), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), p.PlainSize)
+	//Payload: Meta [Records: 11 Compression: Zstd, Savings: 41.19%, Size:       522  B]
 }
-
-const SIZE_PAYLOAD_HEADER = 8 + 8 + 8 + 4 + 2 + 1 + 1

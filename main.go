@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -9,11 +10,13 @@ import (
 	"github.com/der-eismann/libstone/pkg/header"
 	"github.com/der-eismann/libstone/pkg/payload"
 	"github.com/der-eismann/libstone/pkg/zstd"
-	"github.com/sirupsen/logrus"
 )
 
+const FILE_NAME = "bash-completion-2.11-1-1-x86_64.stone"
+
 func main() {
-	file, err := os.Open("bash-completion-2.11-1-1-x86_64.stone") // For read access.
+	fmt.Printf("Archive: %s\n", FILE_NAME)
+	file, err := os.Open(FILE_NAME) // For read access.
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,9 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logrus.Printf("Header decoded:")
-	logrus.Printf("- Number of Payloads: %d", header.Data.NumPayloads)
-	logrus.Printf("- FileType: %d", header.Data.FileType)
 
 	for i := 0; i < int(header.Data.NumPayloads); i++ {
 		_, err = file.Read(data[:])
@@ -52,12 +52,10 @@ func main() {
 		decompdata := make([]byte, 0, payloadheader.PlainSize)
 		writer := bytes.NewBuffer(decompdata)
 
-		decomp, err := zstd.Decompress(sectionReader, writer)
+		_, err = zstd.Decompress(sectionReader, writer)
 		if err != nil {
 			log.Fatal(err)
 		}
-		logrus.Printf("Bytes copied: %d", decomp)
-		logrus.Printf("%#v", writer.Bytes())
 		err = payload.DecodeMetaPayload(writer.Bytes(), int(payloadheader.NumRecords))
 		if err != nil {
 			log.Fatal(err)

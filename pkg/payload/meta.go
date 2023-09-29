@@ -3,31 +3,32 @@ package payload
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
+	"fmt"
 	"io"
+	"strings"
 
-	"github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
-type Meta struct {
-	Tag  RecordTag
-	Type RecordType
-}
+// type Meta struct {
+// 	Tag  RecordTag
+// 	Type RecordType
+// }
 
 type Dependency uint8
 
 //go:generate -command stringer go run golang.org/x/tools/cmd/stringer
-//go:generate stringer -type RecordType,RecordTag
+//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency
 const (
-	PackageName Dependency = iota
-	SharedLibrary
-	PkgConfig
-	Interpreter
-	CMake
-	Python
-	Binary
-	SystemBinary
-	PkgConfig32
+	DependencyPackageName Dependency = iota
+	DependencySharedLibrary
+	DependencyPkgConfig
+	DependencyInterpreter
+	DependencyCMake
+	DependencyPython
+	DependencyBinary
+	DependencySystemBinary
+	DependencyPkgConfig32
 )
 
 type RecordTag uint16
@@ -99,13 +100,25 @@ type MetaRecord struct {
 	Padding    byte
 }
 
-func ReadData[T any](input io.Reader) (T, error) {
+func ReadIntegerData[T any](input io.Reader) (T, error) {
 	var output T
 	err := binary.Read(input, binary.BigEndian, &output)
 	if err != nil {
 		return output, err
 	}
 	return output, nil
+}
+
+func ReadDependsProvides(buf *bytes.Buffer) (string, error) {
+	depType, err := ReadIntegerData[uint8](buf)
+	if err != nil {
+		return "", err
+	}
+	depends, err := buf.ReadString('\x00')
+	if err != nil {
+		return "", err
+	}
+	return wrapDependency(Dependency(depType), depends), nil
 }
 
 func DecodeMetaPayload(payload []byte, records int) error {
@@ -123,19 +136,60 @@ func DecodeMetaPayload(payload []byte, records int) error {
 			return err
 		}
 
-		logrus.Printf("Payload %d, Length %d, Tag %s, Type %s", i, record.Length, record.RecordTag.String(), record.RecordType.String())
-		logrus.Printf("%v", data)
+		fmt.Printf("%-15s : %v\n", strings.TrimLeft(record.RecordTag.String(), "RecordTag"), data)
 	}
 	return nil
 }
 
+func wrapDependency(depType Dependency, name string) string {
+	switch depType {
+	case DependencyPackageName:
+		return name
+	case DependencySharedLibrary:
+		return name
+	case DependencyPkgConfig:
+		return fmt.Sprintf("pkgconfig(%s)", name)
+	case DependencyInterpreter:
+		return fmt.Sprintf("interpreter(%s)", name)
+	case DependencyCMake:
+		return fmt.Sprintf("cmake(%s)", name)
+	case DependencyPython:
+		return fmt.Sprintf("python(%s)", name)
+	case DependencyBinary:
+		return fmt.Sprintf("binary(%s)", name)
+	case DependencySystemBinary:
+		return fmt.Sprintf("system_binary(%s)", name)
+	case DependencyPkgConfig32:
+		return fmt.Sprintf("pkgconfig32(%s)", name)
+	}
+	return name
+}
+
 func switchstuff(buf *bytes.Buffer, recordType RecordType) (any, error) {
 	switch recordType {
+	case RecordTypeInt8:
+		return ReadIntegerData[int8](buf)
+	case RecordTypeUint8:
+		return ReadIntegerData[uint8](buf)
+	case RecordTypeInt16:
+		return ReadIntegerData[int16](buf)
+	case RecordTypeUint16:
+		return ReadIntegerData[uint16](buf)
+	case RecordTypeInt32:
+		return ReadIntegerData[int32](buf)
+	case RecordTypeUint32:
+		return ReadIntegerData[uint32](buf)
+	case RecordTypeInt64:
+		return ReadIntegerData[int64](buf)
+	case RecordTypeUint64:
+		return ReadIntegerData[uint64](buf)
 	case RecordTypeString:
 		return buf.ReadString('\x00')
-	case RecordTypeUint64:
-		return ReadData[uint64](buf)
+	case RecordTypeDependency:
+		return ReadDependsProvides(buf)
+	case RecordTypeProvider:
+		return ReadDependsProvides(buf)
 	default:
-		return nil, errors.New("Idiot")
+		return nil, errors.Errorf("Unknown RecordType: %s", recordType.String())
 	}
 }
