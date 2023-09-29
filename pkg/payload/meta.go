@@ -11,7 +11,7 @@ import (
 )
 
 //go:generate -command stringer go run golang.org/x/tools/cmd/stringer
-//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency
+//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency,FileType
 
 type Dependency uint8
 

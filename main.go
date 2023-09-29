@@ -12,7 +12,7 @@ import (
 	"github.com/der-eismann/libstone/pkg/zstd"
 )
 
-const FILE_NAME = "bash-completion-2.11-1-1-x86_64.stone"
+const FILE_NAME = "linux-firmware-20230625-10-1-x86_64.stone"
 
 func main() {
 	fmt.Printf("Archive: %s\n", FILE_NAME)
@@ -49,14 +49,33 @@ func main() {
 
 		sectionReader := io.NewSectionReader(file, pos, int64(payloadheader.StoredSize))
 
-		decompdata := make([]byte, 0, payloadheader.PlainSize)
-		writer := bytes.NewBuffer(decompdata)
+		payloadData := []byte{}
 
-		_, err = zstd.Decompress(sectionReader, writer)
-		if err != nil {
-			log.Fatal(err)
+		if payloadheader.Compression == payload.Zstd {
+			decompdata := make([]byte, 0, payloadheader.PlainSize)
+			writer := bytes.NewBuffer(decompdata)
+			_, err = zstd.Decompress(sectionReader, writer)
+			if err != nil {
+				log.Fatal(err)
+			}
+			payloadData = writer.Bytes()
+		} else {
+			_, err = sectionReader.Read(payloadData)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		err = payload.DecodeMetaPayload(writer.Bytes(), int(payloadheader.NumRecords))
+
+		switch payloadheader.Kind {
+		case payload.KindMeta:
+			err = payload.DecodeMetaPayload(payloadData, int(payloadheader.NumRecords))
+		case payload.KindLayout:
+			err = payload.DecodeLayoutPayload(payloadData, int(payloadheader.NumRecords))
+		case payload.KindIndex:
+			err = payload.DecodeIndexPayload(payloadData, int(payloadheader.NumRecords))
+		default:
+			continue
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,8 +84,5 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		//file.Seek(int64(payloadheader.StoredSize), io.SeekCurrent)
-		break
 	}
 }
