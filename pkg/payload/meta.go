@@ -1,9 +1,9 @@
 package payload
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 
 	"github.com/sirupsen/logrus"
@@ -16,6 +16,8 @@ type Meta struct {
 
 type Dependency uint8
 
+//go:generate -command stringer go run golang.org/x/tools/cmd/stringer
+//go:generate stringer -type RecordType,RecordTag
 const (
 	PackageName Dependency = iota
 	SharedLibrary
@@ -97,37 +99,43 @@ type MetaRecord struct {
 	Padding    byte
 }
 
+func ReadData[T any](input io.Reader) (T, error) {
+	var output T
+	err := binary.Read(input, binary.BigEndian, &output)
+	if err != nil {
+		return output, err
+	}
+	return output, nil
+}
+
 func DecodeMetaPayload(payload []byte, records int) error {
-	rawReader := bytes.NewReader(payload)
-	reader := bufio.NewReader(rawReader)
-	offset := 0
+	reader := bytes.NewBuffer(payload)
 	for i := 0; i < records; i++ {
 		record := MetaRecord{}
 
-		err := binary.Read(bytes.NewReader(payload[offset:offset+8]), binary.BigEndian, &record)
+		err := binary.Read(reader, binary.BigEndian, &record)
 		if err != nil {
 			return err
 		}
-		offset = offset + 8
+
+		data, err := switchstuff(reader, record.RecordType)
+		if err != nil {
+			return err
+		}
+
 		logrus.Printf("Payload %d, Length %d, Tag %s, Type %s", i, record.Length, record.RecordTag.String(), record.RecordType.String())
-		_, err = rawReader.Seek(8, io.SeekCurrent)
-		if err != nil {
-			return err
-		}
-		switch record.RecordType {
-		case RecordTypeString:
-			output, err := reader.ReadString('\x00')
-			if err != nil {
-				return err
-			}
-			logrus.Printf("Output: %s", output)
-		default:
-			_, err = rawReader.Seek(int64(record.Length), io.SeekCurrent)
-			if err != nil {
-				return err
-			}
-		}
-		offset = offset + int(record.Length)
+		logrus.Printf("%v", data)
 	}
 	return nil
+}
+
+func switchstuff(buf *bytes.Buffer, recordType RecordType) (any, error) {
+	switch recordType {
+	case RecordTypeString:
+		return buf.ReadString('\x00')
+	case RecordTypeUint64:
+		return ReadData[uint64](buf)
+	default:
+		return nil, errors.New("Idiot")
+	}
 }

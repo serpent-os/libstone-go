@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"log"
 	"os"
 
@@ -41,23 +42,28 @@ func main() {
 		}
 		payloadheader.Print()
 
-		payloaddata := make([]byte, payloadheader.StoredSize)
-		n, err := file.Read(payloaddata)
+		pos, err := file.Seek(0, io.SeekCurrent)
 		if err != nil {
 			log.Fatal(err)
 		}
-		logrus.Printf("%d bytes, Data: %#v", n, payloaddata)
+
+		sectionReader := io.NewSectionReader(file, pos, int64(payloadheader.StoredSize))
 
 		decompdata := make([]byte, 0, payloadheader.PlainSize)
 		writer := bytes.NewBuffer(decompdata)
 
-		decomp, err := zstd.Decompress(bytes.NewReader(payloaddata), writer)
+		decomp, err := zstd.Decompress(sectionReader, writer)
 		if err != nil {
 			log.Fatal(err)
 		}
 		logrus.Printf("Bytes copied: %d", decomp)
 		logrus.Printf("%#v", writer.Bytes())
 		err = payload.DecodeMetaPayload(writer.Bytes(), int(payloadheader.NumRecords))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = file.Seek(int64(payloadheader.StoredSize), io.SeekCurrent)
 		if err != nil {
 			log.Fatal(err)
 		}
