@@ -10,15 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// type Meta struct {
-// 	Tag  RecordTag
-// 	Type RecordType
-// }
+//go:generate -command stringer go run golang.org/x/tools/cmd/stringer
+//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency
 
 type Dependency uint8
 
-//go:generate -command stringer go run golang.org/x/tools/cmd/stringer
-//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency
 const (
 	DependencyPackageName Dependency = iota
 	DependencySharedLibrary
