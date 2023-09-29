@@ -49,5 +49,4 @@ func ReadPayloadHeader(headerData [32]byte) (*PayloadHeader, error) {
 func (p PayloadHeader) Print() {
 	fmt.Printf("Payload: %s [Records: %d Compression: %s, Savings: %.2f%%, Size: %s]\n",
 		strings.TrimLeft(p.Kind.String(), "Kind"), p.NumRecords, p.Compression.String(), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), ByteFormatIEC(p.PlainSize))
-	//Payload: Meta [Records: 11 Compression: Zstd, Savings: 41.19%, Size:       522  B]
 }
