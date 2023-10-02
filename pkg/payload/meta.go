@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate -command stringer go run golang.org/x/tools/cmd/stringer
-//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency,FileType
+//go:generate stringer -type RecordType,RecordTag,Kind,Compression,Dependency,FileType -output generated_const_names.go
 
 type Dependency uint8
 

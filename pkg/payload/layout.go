@@ -72,10 +72,6 @@ func DecodeLayoutPayload(payload []byte, records int) error {
 			}
 			fmt.Printf("  - /usr/%s [%s]\n", source, strings.TrimLeft(record.FileType.String(), "FileType"))
 		}
-
-		//fmt.Printf("  - %s -> %s [%s]", source, target, strings.TrimLeft(record.FileType.String(), "FileType"))
-		//  - /usr/share/bash-completion/bash_completion -> 3c005061e2d565b469e9abdfe6478cfe [Regular]
-
 	}
 	return nil
 }

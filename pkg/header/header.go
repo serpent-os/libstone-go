@@ -6,6 +6,8 @@ import (
 	"errors"
 )
 
+//go:generate stringer -type FileType -output generated_const_names.go
+
 type AgnosticHeader struct {
 	/// 4-bytes, BE (u32): Magic to quickly identify a stone file
 	Magic [4]byte
@@ -44,28 +46,28 @@ const (
 
 type Version uint32
 
-func ReadHeader(headerData [32]byte) (*AgnosticHeader, error) {
+func ReadHeader(headerData [32]byte) (AgnosticHeader, error) {
 	agnosticHeader := AgnosticHeader{}
 	r := bytes.NewReader(headerData[:])
 	err := binary.Read(r, binary.BigEndian, &agnosticHeader)
 	if err != nil {
-		return nil, err
+		return AgnosticHeader{}, err
 	}
 
 	stoneMagic := getStoneMagic()
 	integrityCheck := getIntegrityCheck()
 
 	if !bytes.Equal(agnosticHeader.Magic[:], stoneMagic[:]) {
-		return nil, errors.New("File is no .stone file")
+		return AgnosticHeader{}, errors.New("File is no .stone file")
 	}
 
 	if !bytes.Equal(agnosticHeader.Data.IntegrityCheck[:], integrityCheck[:]) {
-		return nil, errors.New("Integrity Check sequence doesn't match")
+		return AgnosticHeader{}, errors.New("Integrity Check sequence doesn't match")
 	}
 
 	if agnosticHeader.Data.FileType > 4 {
-		return nil, errors.New("Unsupported FileType")
+		return AgnosticHeader{}, errors.New("Unsupported FileType")
 	}
 
-	return &agnosticHeader, nil
+	return agnosticHeader, nil
 }

@@ -22,22 +22,7 @@ func DecodeIndexPayload(payload []byte, records int) error {
 			return err
 		}
 
-		fmt.Printf("  - %x [size: %s]\n", record.Digest, ByteFormatIEC(record.End-record.Start))
-		//- 3c005061e2d565b469e9abdfe6478cfe [size:    74.54 KiB]
+		fmt.Printf("  - %x [size: %s]\n", record.Digest, formatBytes(record.End-record.Start))
 	}
 	return nil
-}
-
-func ByteFormatIEC(b uint64) string {
-	const unit = 1024
-	if b < unit {
-		return fmt.Sprintf("%9d   B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%9.2f %ciB",
-		float64(b)/float64(div), "KMGTPE"[exp])
 }

@@ -12,7 +12,9 @@ import (
 	"github.com/der-eismann/libstone/pkg/zstd"
 )
 
-const FILE_NAME = "linux-firmware-20230625-10-1-x86_64.stone"
+//go:generate -command stringer go run golang.org/x/tools/cmd/stringer
+
+const FILE_NAME = "bash-completion-2.11-1-1-x86_64.stone"
 
 func main() {
 	fmt.Printf("Archive: %s\n", FILE_NAME)
