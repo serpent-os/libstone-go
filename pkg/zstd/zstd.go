@@ -13,6 +13,5 @@ func Decompress(in io.Reader, out io.Writer) (int64, error) {
 	}
 	defer d.Close()
 
-	n, err := io.Copy(out, d)
-	return n, err
+	return io.Copy(out, d)
 }
