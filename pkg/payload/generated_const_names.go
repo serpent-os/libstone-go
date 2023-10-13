@@ -96,13 +96,13 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[None-1]
-	_ = x[Zstd-2]
+	_ = x[CompressionNone-1]
+	_ = x[CompressionZstd-2]
 }
 
-const _Compression_name = "NoneZstd"
+const _Compression_name = "CompressionNoneCompressionZstd"
 
-var _Compression_index = [...]uint8{0, 4, 8}
+var _Compression_index = [...]uint8{0, 15, 30}
 
 func (i Compression) String() string {
 	i -= 1

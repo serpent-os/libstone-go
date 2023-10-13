@@ -1,7 +1,7 @@
 package payload
 
 import (
-	"bytes"
+	"bufio"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -105,29 +105,29 @@ func ReadIntegerData[T any](input io.Reader) (T, error) {
 	return output, nil
 }
 
-func ReadDependsProvides(buf *bytes.Buffer) (string, error) {
-	depType, err := ReadIntegerData[uint8](buf)
+func ReadDependsProvides(r *bufio.Reader) (string, error) {
+	depType, err := ReadIntegerData[uint8](r)
 	if err != nil {
 		return "", err
 	}
-	depends, err := buf.ReadString('\x00')
+	depends, err := r.ReadString('\x00')
 	if err != nil {
 		return "", err
 	}
 	return wrapDependency(Dependency(depType), depends), nil
 }
 
-func DecodeMetaPayload(payload []byte, records int) error {
-	reader := bytes.NewBuffer(payload)
+func PrintMetaPayload(r io.Reader, records int) error {
+	bufferedReader := bufio.NewReader(r)
 	for i := 0; i < records; i++ {
 		record := MetaRecord{}
 
-		err := binary.Read(reader, binary.BigEndian, &record)
+		err := binary.Read(bufferedReader, binary.BigEndian, &record)
 		if err != nil {
 			return err
 		}
 
-		data, err := switchstuff(reader, record.RecordType)
+		data, err := switchstuff(bufferedReader, record.RecordType)
 		if err != nil {
 			return err
 		}
@@ -161,30 +161,30 @@ func wrapDependency(depType Dependency, name string) string {
 	return name
 }
 
-func switchstuff(buf *bytes.Buffer, recordType RecordType) (any, error) {
+func switchstuff(r *bufio.Reader, recordType RecordType) (any, error) {
 	switch recordType {
 	case RecordTypeInt8:
-		return ReadIntegerData[int8](buf)
+		return ReadIntegerData[int8](r)
 	case RecordTypeUint8:
-		return ReadIntegerData[uint8](buf)
+		return ReadIntegerData[uint8](r)
 	case RecordTypeInt16:
-		return ReadIntegerData[int16](buf)
+		return ReadIntegerData[int16](r)
 	case RecordTypeUint16:
-		return ReadIntegerData[uint16](buf)
+		return ReadIntegerData[uint16](r)
 	case RecordTypeInt32:
-		return ReadIntegerData[int32](buf)
+		return ReadIntegerData[int32](r)
 	case RecordTypeUint32:
-		return ReadIntegerData[uint32](buf)
+		return ReadIntegerData[uint32](r)
 	case RecordTypeInt64:
-		return ReadIntegerData[int64](buf)
+		return ReadIntegerData[int64](r)
 	case RecordTypeUint64:
-		return ReadIntegerData[uint64](buf)
+		return ReadIntegerData[uint64](r)
 	case RecordTypeString:
-		return buf.ReadString('\x00')
+		return r.ReadString('\x00')
 	case RecordTypeDependency:
-		return ReadDependsProvides(buf)
+		return ReadDependsProvides(r)
 	case RecordTypeProvider:
-		return ReadDependsProvides(buf)
+		return ReadDependsProvides(r)
 	default:
 		return nil, errors.Errorf("Unknown RecordType: %s", recordType.String())
 	}

@@ -21,8 +21,8 @@ const (
 type Compression uint8
 
 const (
-	None Compression = iota + 1
-	Zstd
+	CompressionNone Compression = iota + 1
+	CompressionZstd
 )
 
 type PayloadHeader struct {
@@ -47,5 +47,5 @@ func ReadPayloadHeader(r io.Reader) (PayloadHeader, error) {
 
 func (p PayloadHeader) Print() {
 	fmt.Printf("Payload: %s [Records: %d Compression: %s, Savings: %.2f%%, Size: %s]\n",
-		strings.TrimLeft(p.Kind.String(), "Kind"), p.NumRecords, p.Compression.String(), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), formatBytes(p.PlainSize))
+		strings.TrimLeft(p.Kind.String(), "Kind"), p.NumRecords, strings.TrimPrefix(p.Compression.String(), "Compression"), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), formatBytes(p.PlainSize))
 }

@@ -1,15 +1,15 @@
 package cmd
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log"
 	"os"
 
 	"github.com/der-eismann/libstone/pkg/header"
 	"github.com/der-eismann/libstone/pkg/payload"
-	"github.com/der-eismann/libstone/pkg/zstd"
+	"github.com/klauspost/compress/zstd"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -42,34 +42,17 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 
 		pos += 32
 
-		sectionReader := io.NewSectionReader(file, pos, int64(payloadheader.StoredSize))
+		payloadReader, err := getCompressionReader(file, payloadheader.Compression, pos, int64(payloadheader.StoredSize))
 
 		pos += int64(payloadheader.StoredSize)
 
-		payloadData := []byte{}
-
-		if payloadheader.Compression == payload.Zstd {
-			decompdata := make([]byte, 0, payloadheader.PlainSize)
-			writer := bytes.NewBuffer(decompdata)
-			_, err = zstd.Decompress(sectionReader, writer)
-			if err != nil {
-				log.Fatal(err)
-			}
-			payloadData = writer.Bytes()
-		} else {
-			_, err = sectionReader.Read(payloadData)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-
 		switch payloadheader.Kind {
 		case payload.KindMeta:
-			err = payload.DecodeMetaPayload(payloadData, int(payloadheader.NumRecords))
+			err = payload.PrintMetaPayload(payloadReader, int(payloadheader.NumRecords))
 		case payload.KindLayout:
-			err = payload.DecodeLayoutPayload(payloadData, int(payloadheader.NumRecords))
+			err = payload.PrintLayoutPayload(payloadReader, int(payloadheader.NumRecords))
 		case payload.KindIndex:
-			err = payload.DecodeIndexPayload(payloadData, int(payloadheader.NumRecords))
+			err = payload.PrintIndexPayload(payloadReader, int(payloadheader.NumRecords))
 		default:
 			continue
 		}
@@ -77,4 +60,14 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 		}
 	}
+}
+
+func getCompressionReader(r io.ReaderAt, compressionType payload.Compression, offset, length int64) (io.Reader, error) {
+	switch compressionType {
+	case payload.CompressionNone:
+		return io.NewSectionReader(r, offset, length), nil
+	case payload.CompressionZstd:
+		return zstd.NewReader(io.NewSectionReader(r, offset, length))
+	}
+	return nil, errors.New("Unknown compression type")
 }

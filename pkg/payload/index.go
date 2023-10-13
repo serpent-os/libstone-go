@@ -1,9 +1,9 @@
 package payload
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 )
 
 type IndexEntry struct {
@@ -12,12 +12,11 @@ type IndexEntry struct {
 	Digest [16]uint8
 }
 
-func DecodeIndexPayload(payload []byte, records int) error {
-	reader := bytes.NewBuffer(payload)
+func PrintIndexPayload(r io.Reader, records int) error {
 	for i := 0; i < records; i++ {
 		record := IndexEntry{}
 
-		err := binary.Read(reader, binary.BigEndian, &record)
+		err := binary.Read(r, binary.BigEndian, &record)
 		if err != nil {
 			return err
 		}

@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"bytes"
+	"bufio"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -30,43 +31,43 @@ type LayoutEntry struct {
 	Padding      [11]byte
 }
 
-func DecodeLayoutPayload(payload []byte, records int) error {
-	reader := bytes.NewBuffer(payload)
+func PrintLayoutPayload(r io.Reader, records int) error {
+	bufferedReader := bufio.NewReader(r)
 	for i := 0; i < records; i++ {
 		record := LayoutEntry{}
 
-		err := binary.Read(reader, binary.BigEndian, &record)
+		err := binary.Read(bufferedReader, binary.BigEndian, &record)
 		if err != nil {
 			return err
 		}
 
 		switch record.FileType {
 		case FileTypeRegular:
-			pt1, err := ReadIntegerData[uint64](reader)
+			pt1, err := ReadIntegerData[uint64](bufferedReader)
 			if err != nil {
 				return err
 			}
-			pt2, err := ReadIntegerData[uint64](reader)
+			pt2, err := ReadIntegerData[uint64](bufferedReader)
 			if err != nil {
 				return err
 			}
-			source, err := reader.ReadString('\x00')
+			source, err := bufferedReader.ReadString('\x00')
 			if err != nil {
 				return err
 			}
 			fmt.Printf("  - /usr/%s -> %x%x [%s]\n", source, pt1, pt2, strings.TrimLeft(record.FileType.String(), "FileType"))
 		case FileTypeSymlink:
-			target, err := reader.ReadString('\x00')
+			target, err := bufferedReader.ReadString('\x00')
 			if err != nil {
 				return err
 			}
-			source, err := reader.ReadString('\x00')
+			source, err := bufferedReader.ReadString('\x00')
 			if err != nil {
 				return err
 			}
 			fmt.Printf("  - /usr/%s -> %s [%s]\n", source, target, strings.TrimLeft(record.FileType.String(), "FileType"))
 		default:
-			source, err := reader.ReadString('\x00')
+			source, err := bufferedReader.ReadString('\x00')
 			if err != nil {
 				return err
 			}
