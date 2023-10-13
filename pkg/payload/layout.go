@@ -51,27 +51,27 @@ func PrintLayoutPayload(r io.Reader, records int) error {
 			if err != nil {
 				return err
 			}
-			source, err := bufferedReader.ReadString('\x00')
+			source, err := bufferedReader.ReadBytes('\x00')
 			if err != nil {
 				return err
 			}
-			fmt.Printf("  - /usr/%s -> %x%x [%s]\n", source, pt1, pt2, strings.TrimLeft(record.FileType.String(), "FileType"))
+			fmt.Printf("  - /usr/%s -> %x%x [%s]\n", source[:len(source)-1], pt1, pt2, strings.TrimLeft(record.FileType.String(), "FileType"))
 		case FileTypeSymlink:
-			target, err := bufferedReader.ReadString('\x00')
+			target, err := bufferedReader.ReadBytes('\x00')
 			if err != nil {
 				return err
 			}
-			source, err := bufferedReader.ReadString('\x00')
+			source, err := bufferedReader.ReadBytes('\x00')
 			if err != nil {
 				return err
 			}
-			fmt.Printf("  - /usr/%s -> %s [%s]\n", source, target, strings.TrimLeft(record.FileType.String(), "FileType"))
+			fmt.Printf("  - /usr/%s -> %s [%s]\n", source[:len(source)-1], target[:len(target)-1], strings.TrimLeft(record.FileType.String(), "FileType"))
 		default:
 			source, err := bufferedReader.ReadString('\x00')
 			if err != nil {
 				return err
 			}
-			fmt.Printf("  - /usr/%s [%s]\n", source, strings.TrimLeft(record.FileType.String(), "FileType"))
+			fmt.Printf("  - /usr/%s [%s]\n", source[:len(source)-1], strings.TrimLeft(record.FileType.String(), "FileType"))
 		}
 	}
 	return nil

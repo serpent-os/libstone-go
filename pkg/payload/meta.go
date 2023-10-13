@@ -114,7 +114,8 @@ func ReadDependsProvides(r *bufio.Reader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return wrapDependency(Dependency(depType), depends), nil
+
+	return wrapDependency(Dependency(depType), strings.TrimSuffix(depends, "\x00")), nil
 }
 
 func PrintMetaPayload(r io.Reader, records int) error {
@@ -130,6 +131,10 @@ func PrintMetaPayload(r io.Reader, records int) error {
 		data, err := switchstuff(bufferedReader, record.RecordType)
 		if err != nil {
 			return err
+		}
+
+		if stringData, ok := data.(string); ok {
+			data = strings.TrimSuffix(stringData, "\x00")
 		}
 
 		fmt.Printf("%-15s : %v\n", strings.TrimLeft(record.RecordTag.String(), "RecordTag"), data)
