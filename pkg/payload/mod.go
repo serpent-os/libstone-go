@@ -1,9 +1,9 @@
 package payload
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -35,15 +35,14 @@ type PayloadHeader struct {
 	Compression Compression
 }
 
-func ReadPayloadHeader(headerData [32]byte) (*PayloadHeader, error) {
+func ReadPayloadHeader(r io.Reader) (PayloadHeader, error) {
 	payloadHeaderHeader := PayloadHeader{}
-	r := bytes.NewReader(headerData[:])
 	err := binary.Read(r, binary.BigEndian, &payloadHeaderHeader)
 	if err != nil {
-		return nil, err
+		return PayloadHeader{}, err
 	}
 
-	return &payloadHeaderHeader, nil
+	return payloadHeaderHeader, nil
 }
 
 func (p PayloadHeader) Print() {

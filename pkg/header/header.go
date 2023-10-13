@@ -1,9 +1,10 @@
 package header
 
 import (
-	"bytes"
 	"encoding/binary"
-	"errors"
+	"io"
+
+	"github.com/pkg/errors"
 )
 
 //go:generate -command stringer go run golang.org/x/tools/cmd/stringer
@@ -23,7 +24,7 @@ type AgnosticHeader struct {
 
 type V1Data struct {
 	NumPayloads    uint16
-	IntegrityCheck [21]uint8
+	IntegrityCheck [21]byte
 	FileType       FileType
 }
 
@@ -31,8 +32,8 @@ func getStoneMagic() [4]byte {
 	return [4]byte{'\x00', 'm', 'o', 's'}
 }
 
-func getIntegrityCheck() [21]uint8 {
-	return [21]uint8{0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7}
+func getIntegrityCheck() [21]byte {
+	return [21]byte{0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7}
 }
 
 type FileType uint8
@@ -47,22 +48,22 @@ const (
 
 type Version uint32
 
-func ReadHeader(headerData [32]byte) (AgnosticHeader, error) {
+func ReadHeader(r io.Reader) (AgnosticHeader, error) {
 	agnosticHeader := AgnosticHeader{}
-	r := bytes.NewReader(headerData[:])
+
 	err := binary.Read(r, binary.BigEndian, &agnosticHeader)
 	if err != nil {
-		return AgnosticHeader{}, err
+		return AgnosticHeader{}, errors.Wrap(err, "Couldn't read header into struct")
 	}
 
 	stoneMagic := getStoneMagic()
 	integrityCheck := getIntegrityCheck()
 
-	if !bytes.Equal(agnosticHeader.Magic[:], stoneMagic[:]) {
+	if string(agnosticHeader.Magic[:]) != string(stoneMagic[:]) {
 		return AgnosticHeader{}, errors.New("File is no .stone file")
 	}
 
-	if !bytes.Equal(agnosticHeader.Data.IntegrityCheck[:], integrityCheck[:]) {
+	if string(agnosticHeader.Data.IntegrityCheck[:]) != string(integrityCheck[:]) {
 		return AgnosticHeader{}, errors.New("Integrity Check sequence doesn't match")
 	}
 

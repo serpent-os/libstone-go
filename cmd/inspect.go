@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -20,39 +19,32 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 		logrus.Fatal("One stone file as argument required")
 	}
 
-	fmt.Printf("Archive: %s\n", args[0])
-	file, err := os.Open(args[0]) // For read access.
+	var pos int64
+
+	file, err := os.Open(args[0])
 	if err != nil {
-		log.Fatal(err)
-	}
-	data := [32]byte{}
-	_, err = file.Read(data[:])
-	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("Failed to open file: %s", err)
 	}
 
-	header, err := header.ReadHeader(data)
+	packageHeader, err := header.ReadHeader(io.NewSectionReader(file, 0, 32))
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("Failed to read package header: %s", err)
 	}
 
-	for i := 0; i < int(header.Data.NumPayloads); i++ {
-		_, err = file.Read(data[:])
+	pos += 32
+
+	for i := 0; i < int(packageHeader.Data.NumPayloads); i++ {
+		payloadheader, err := payload.ReadPayloadHeader(io.NewSectionReader(file, pos, 32))
 		if err != nil {
-			log.Fatal(err)
-		}
-		payloadheader, err := payload.ReadPayloadHeader(data)
-		if err != nil {
-			log.Fatal(err)
+			logrus.Fatalf("Failed to read payload header: %s", err)
 		}
 		payloadheader.Print()
 
-		pos, err := file.Seek(0, io.SeekCurrent)
-		if err != nil {
-			log.Fatal(err)
-		}
+		pos += 32
 
 		sectionReader := io.NewSectionReader(file, pos, int64(payloadheader.StoredSize))
+
+		pos += int64(payloadheader.StoredSize)
 
 		payloadData := []byte{}
 
@@ -81,11 +73,6 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 		default:
 			continue
 		}
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = file.Seek(int64(payloadheader.StoredSize), io.SeekCurrent)
 		if err != nil {
 			log.Fatal(err)
 		}
