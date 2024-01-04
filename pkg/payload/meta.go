@@ -137,7 +137,7 @@ func PrintMetaPayload(r io.Reader, records int) error {
 			data = strings.TrimSuffix(stringData, "\x00")
 		}
 
-		fmt.Printf("%-15s : %v\n", strings.TrimLeft(record.RecordTag.String(), "RecordTag"), data)
+		fmt.Printf("%-20s : %v\n", strings.TrimLeft(record.RecordTag.String(), "RecordTag"), data)
 	}
 	return nil
 }
