@@ -3,9 +3,11 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/der-eismann/libstone/pkg/header"
 	"github.com/der-eismann/libstone/pkg/payload"
@@ -21,10 +23,17 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 
 	var pos int64
 
-	file, err := os.Open(args[0])
+	absPath, err := filepath.Abs(args[0])
+	if err != nil {
+		logrus.Fatalf("Failed to get absolute path: %s", err)
+	}
+
+	file, err := os.Open(absPath)
 	if err != nil {
 		logrus.Fatalf("Failed to open file: %s", err)
 	}
+
+	fmt.Printf("\"%s\" = stone container version V1\n", absPath)
 
 	packageHeader, err := header.ReadHeader(io.NewSectionReader(file, 0, 32))
 	if err != nil {
@@ -38,11 +47,14 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 		if err != nil {
 			logrus.Fatalf("Failed to read payload header: %s", err)
 		}
-		payloadheader.Print()
+		//payloadheader.Print()
 
 		pos += 32
 
 		payloadReader, err := getCompressionReader(file, payloadheader.Compression, pos, int64(payloadheader.StoredSize))
+		if err != nil {
+			logrus.Fatalf("Failed to get compression reader: %s", err)
+		}
 
 		pos += int64(payloadheader.StoredSize)
 
