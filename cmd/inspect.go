@@ -63,8 +63,8 @@ func Inspect(ctx context.Context, cmd *cobra.Command, args []string) {
 			err = payload.PrintMetaPayload(payloadReader, int(payloadheader.NumRecords))
 		case payload.KindLayout:
 			err = payload.PrintLayoutPayload(payloadReader, int(payloadheader.NumRecords))
-		case payload.KindIndex:
-			err = payload.PrintIndexPayload(payloadReader, int(payloadheader.NumRecords))
+		// case payload.KindIndex:
+		// 	err = payload.PrintIndexPayload(payloadReader, int(payloadheader.NumRecords))
 		default:
 			continue
 		}

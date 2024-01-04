@@ -120,6 +120,7 @@ func ReadDependsProvides(r *bufio.Reader) (string, error) {
 
 func PrintMetaPayload(r io.Reader, records int) error {
 	bufferedReader := bufio.NewReader(r)
+	var depends, provides, conflicts []string
 	for i := 0; i < records; i++ {
 		record := MetaRecord{}
 
@@ -137,7 +138,37 @@ func PrintMetaPayload(r io.Reader, records int) error {
 			data = strings.TrimSuffix(stringData, "\x00")
 		}
 
-		fmt.Printf("%-20s : %v\n", strings.TrimPrefix(record.RecordTag.String(), "RecordTag"), data)
+		switch record.RecordTag {
+		case RecordTagDepends:
+			depends = append(depends, fmt.Sprintf("%s", data))
+		case RecordTagProvides:
+			provides = append(provides, fmt.Sprintf("%s", data))
+		case RecordTagBuildDepends:
+			conflicts = append(conflicts, fmt.Sprintf("%s", data))
+		default:
+			fmt.Printf("%-20s : %v\n", strings.TrimPrefix(record.RecordTag.String(), "RecordTag"), data)
+		}
+	}
+
+	if len(depends) > 0 {
+		fmt.Printf("\n%-20s :\n", "Dependencies")
+		for _, dep := range depends {
+			fmt.Printf("    - %s\n", dep)
+		}
+	}
+
+	if len(provides) > 0 {
+		fmt.Printf("\n%-20s :\n", "Providers")
+		for _, prov := range provides {
+			fmt.Printf("    - %s\n", prov)
+		}
+	}
+
+	if len(conflicts) > 0 {
+		fmt.Printf("\n%-20s :\n", "Conflicts")
+		for _, conf := range conflicts {
+			fmt.Printf("    - %s\n", conf)
+		}
 	}
 	return nil
 }
