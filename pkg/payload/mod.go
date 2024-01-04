@@ -47,5 +47,5 @@ func ReadPayloadHeader(r io.Reader) (PayloadHeader, error) {
 
 func (p PayloadHeader) Print() {
 	fmt.Printf("Payload: %s [Records: %d Compression: %s, Savings: %.2f%%, Size: %s]\n",
-		strings.TrimLeft(p.Kind.String(), "Kind"), p.NumRecords, strings.TrimPrefix(p.Compression.String(), "Compression"), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), formatBytes(p.PlainSize))
+		strings.TrimPrefix(p.Kind.String(), "Kind"), p.NumRecords, strings.TrimPrefix(p.Compression.String(), "Compression"), 100-(float64(p.StoredSize)/float64(p.PlainSize)*100), formatBytes(p.PlainSize))
 }
