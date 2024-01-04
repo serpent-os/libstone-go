@@ -1,4 +1,5 @@
 *.stone
+stone.index
 main
 libstone
 vendor/
