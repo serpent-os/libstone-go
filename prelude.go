@@ -7,7 +7,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/serpent-os/libstone/internal/readers"
+	"github.com/serpent-os/libstone-go/internal/readers"
 )
 
 // Version is the stone format version contained inside the [Prelude].

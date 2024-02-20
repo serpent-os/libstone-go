@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Serpent OS Developers
 // SPDX-License-Identifier: MPL-2.0
 
-module github.com/serpent-os/libstone
+module github.com/serpent-os/libstone-go
 
 go 1.21
 

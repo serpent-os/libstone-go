@@ -9,8 +9,8 @@ import (
 	"os"
 	"unicode/utf8"
 
-	"github.com/serpent-os/libstone"
-	"github.com/serpent-os/libstone/stone1"
+	"github.com/serpent-os/libstone-go"
+	"github.com/serpent-os/libstone-go/stone1"
 )
 
 type cmdInspect struct {

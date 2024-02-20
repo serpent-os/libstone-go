@@ -9,7 +9,7 @@ import (
 	"io"
 	"io/fs"
 
-	"github.com/serpent-os/libstone/internal/readers"
+	"github.com/serpent-os/libstone-go/internal/readers"
 	"github.com/zeebo/xxh3"
 )
 
