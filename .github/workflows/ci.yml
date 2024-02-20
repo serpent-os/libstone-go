@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2024 Serpent OS Developers
+# SPDX-License-Identifier: CC0-1.0
+
+name: Golang CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build & Test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check formatting
+      run: |
+        task check_formatting
+
+    - name: Build project
+      run: |
+        task build
+        build/libstone --version
+
+    - name: Run tests
+      run: |
+        task check
