@@ -4,7 +4,7 @@
 package stone1
 
 import (
-	"github.com/serpent-os/libstone/internal/readers"
+	"github.com/serpent-os/libstone-go/internal/readers"
 )
 
 // RecordKind is the kind of the payload's records.

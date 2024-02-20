@@ -8,7 +8,7 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/serpent-os/libstone/internal/readers"
+	"github.com/serpent-os/libstone-go/internal/readers"
 )
 
 const (

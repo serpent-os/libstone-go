@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/serpent-os/libstone/internal/cli"
+	"github.com/serpent-os/libstone-go/internal/cli"
 )
 
 func main() {

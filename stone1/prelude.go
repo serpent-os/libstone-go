@@ -6,8 +6,8 @@ package stone1
 import (
 	"errors"
 
-	"github.com/serpent-os/libstone"
-	"github.com/serpent-os/libstone/internal/readers"
+	"github.com/serpent-os/libstone-go"
+	"github.com/serpent-os/libstone-go/internal/readers"
 )
 
 var (
