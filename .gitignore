@@ -1,6 +1,5 @@
-*.stone
-stone.index
-main
-libstone
-vendor/
-dist/
+# SPDX-FileCopyrightText: 2024 Serpent OS Developers
+# SPDX-License-Identifier: CC0-1.0
+
+.vscode/
+build/
