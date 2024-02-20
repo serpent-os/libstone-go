@@ -1,0 +1,37 @@
+version: '3'
+
+vars:
+  BINNAME: "libstone"
+  OUTPATH: "{{.ROOT_DIR}}/build/{{.BINNAME}}"
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  generate:
+    cmds:
+      - go generate ./...
+
+  build:
+    cmds:
+      - go build -o {{.OUTPATH}} -ldflags "-X github.com/serpent-os/libstone/internal/cli.Version={{.VERSION}}" cli/main.go
+    vars:
+      VERSION:
+        sh: git describe --tags || git rev-parse HEAD
+
+  check:
+    cmds:
+      - go test ./...
+
+  install:
+    cmds:
+      - install -Dm00755 {{.OUTPATH}} -t {{.DESTDIR}}/{{.bindir}}
+    vars:
+      DESTDIR: /
+      prefix: /usr/local
+      bindir: "{{.prefix}}/bin"
+
+  clean:
+    cmds:
+      - rm -rf {{.OUTPATH}}
