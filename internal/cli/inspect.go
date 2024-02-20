@@ -73,5 +73,16 @@ func printLayout(rec *stone1.LayoutRecord) {
 		}
 		files[i] = hex.EncodeToString([]byte(files[i]))
 	}
-	fmt.Printf("%s\t-> %s\t[%s]\n", files[0], files[1], rec.Entry.FileType)
+
+	// Replicate the output of moss, acting as the reference implementation for us.
+	// https://github.com/serpent-os/moss/blob/52a783548904b78e8d9d312634887e95c29bd817/crates/moss/src/cli/inspect.rs#L110-L122
+	switch rec.Entry.FileType {
+	case stone1.Regular:
+		fmt.Printf("    - /usr/%s - [%s] %s\n", files[1], rec.Entry.FileType, files[0])
+	case stone1.Symlink:
+		fmt.Printf("    - /usr/%s -> %s [%s]\n", files[1], files[0], rec.Entry.FileType)
+	case stone1.Directory:
+		fmt.Printf("    - /usr/%s [%s]", files[1], rec.Entry.FileType)
+	default:
+	}
 }
