@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Serpent OS Developers
 // SPDX-License-Identifier: MPL-2.0
 
-package cli
+package cmd
 
 import (
 	"encoding/hex"

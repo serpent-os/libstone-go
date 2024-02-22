@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/serpent-os/libstone-go/internal/cli"
+	"github.com/serpent-os/libstone-go/internal/cli/cmd"
 )
 
 func main() {
-	if err := cli.Run(); err != nil {
+	if err := cmd.Run(); err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
