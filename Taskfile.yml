@@ -38,3 +38,11 @@ tasks:
   clean:
     cmds:
       - rm -rf {{.OUTPATH}}
+
+  fmt:
+    cmds:
+      - gofmt -s -w .
+
+  check_formatting:
+    cmds:
+      - test -z $(gofmt -l -s .) && exit 0 || gofmt -d -s .; exit 1
