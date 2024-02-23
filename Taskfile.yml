@@ -18,7 +18,7 @@ tasks:
 
   build:
     cmds:
-      - go build -o {{.OUTPATH}} -ldflags "-X github.com/serpent-os/libstone-go/internal/cli.Version={{.VERSION}}" cli/main.go
+      - go build -o {{.OUTPATH}} -ldflags "-X github.com/serpent-os/libstone-go/internal/cli/cmd.Version={{.VERSION}}" internal/cli/main.go
     vars:
       VERSION:
         sh: git describe --tags || git rev-parse HEAD
